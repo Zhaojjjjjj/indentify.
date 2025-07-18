@@ -27,6 +27,19 @@ export const useImageDetection = () => {
   watch(() => i18n.global.locale.value, () => {
     updateModelStatus(currentStatusKey, currentStatusParams)
   })
+
+  /**
+   * Resets the progress state for fresh initialization
+   */
+  const resetProgress = () => {
+    if (fakeProgressTimer) {
+      clearInterval(fakeProgressTimer)
+      fakeProgressTimer = null
+    }
+    currentPercent = 0
+    readyFlag = false
+    modelReady.value = false
+  }
   
   let resolveDetection: ((value: DetectionResult[]) => void) | null = null
   let currentPercent = 0
@@ -34,49 +47,62 @@ export const useImageDetection = () => {
   let readyFlag = false
 
   /**
-   * Updates the model loading progress
+   * Updates the model loading progress - now only handles model ready state
    * @param p - Progress percentage (0-100)
    */
   const updateProgress = (p: number) => {
-    if (readyFlag) return
-    p = Math.floor(p)
-    if (p > 99) p = 99
-    if (p > currentPercent) {
-      currentPercent = p
-      updateModelStatus('detection.initializingModel', { percent: currentPercent })
+    // Only update to 100% when model is fully ready
+    if (p >= 100 && readyFlag) {
+      currentPercent = 100
+      if (fakeProgressTimer) {
+        clearInterval(fakeProgressTimer)
+        fakeProgressTimer = null
+      }
     }
+    // Ignore real progress in other cases, rely completely on fake progress
   }
 
   /**
-   * Starts fake progress animation for better UX
-   * @param fromPercent - Starting percentage
+   * Starts fake progress animation - completely based on fake progress
+   * Always starts from 0 and grows randomly
    */
-  const startFakeProgress = (fromPercent: number) => {
+  const startFakeProgress = () => {
+    // Always reset to 0 for consistent experience
+    currentPercent = 0
+    
     if (fakeProgressTimer) clearInterval(fakeProgressTimer)
-    currentPercent = fromPercent
+    
+    // Update initial 0%
+    updateModelStatus('detection.initializingModel', { percent: 0 })
+    
     fakeProgressTimer = setInterval(() => {
+      // If model is ready, quickly jump to 100%
       if (readyFlag) {
-        clearInterval(fakeProgressTimer!)
-        fakeProgressTimer = null
+        currentPercent = 100
+        if (fakeProgressTimer) {
+          clearInterval(fakeProgressTimer)
+          fakeProgressTimer = null
+        }
         return
       }
+      
+      // If not at 99% yet, continue growing
       if (currentPercent < 99) {
-        const increment = Math.floor(Math.random() * 3) + 1
-        currentPercent = Math.min(99, currentPercent + increment)
-        updateModelStatus('detection.initializingModel', { percent: currentPercent })
+        // Randomly increase 1%-5% per second
+        const increment = Math.random() * 4 + 1 // 1-5%
+        currentPercent = Math.min(currentPercent + increment, 99)
+        updateModelStatus('detection.initializingModel', { percent: Math.floor(currentPercent) })
       }
-    }, 1000)
+      // Stop at 99% and wait for model loading completion
+    }, 1000) // Update every 1 second
   }
 
   // Initialize Web Worker for AI model processing
   const worker = new Worker('/worker.js', { type: 'module' })
   
-  // Initialize detection state
-  readyFlag = false
-  modelReady.value = false
-  updateModelStatus('detection.initializingModel', { percent: 0 })
-  currentPercent = 0
-  startFakeProgress(0)
+  // Initialize detection state - always reset for consistent experience
+  resetProgress()
+  startFakeProgress() // Start fake progress from 0
 
   /**
    * Handles messages from the Web Worker
@@ -87,9 +113,7 @@ export const useImageDetection = () => {
 
     switch (status) {
       case 'progress':
-        if (data?.progress !== undefined) {
-          updateProgress(Math.round(data.progress * 100))
-        }
+        // 忽略真实进度，只依赖假进度
         break
         
       case 'ready':
