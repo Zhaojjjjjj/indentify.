@@ -30,5 +30,10 @@
     "ready": "Ready",
     "loading": "Loading",
     "error": "Error"
+  },
+  "results": {
+    "detectedObjects": "Detected Objects",
+    "confidence": "Confidence",
+    "noResultsFound": "No objects detected in this image"
   }
 }

@@ -21,6 +21,15 @@ export interface ProcessedDetectionResult {
     xmax: number
     ymax: number
   }
+  labelPosition?: {
+    x: number
+    y: number
+    anchor: string
+    needsLine: boolean
+  }
+  needsLine?: boolean
+  lineStart?: { x: number; y: number }
+  lineEnd?: { x: number; y: number }
 }
 
 export interface ImageData {

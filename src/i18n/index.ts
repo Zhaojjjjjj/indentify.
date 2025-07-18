@@ -31,6 +31,11 @@ const en = {
     "ready": "Ready",
     "loading": "Loading",
     "error": "Error"
+  },
+  "results": {
+    "detectedObjects": "Detected Objects",
+    "confidence": "Confidence",
+    "noResultsFound": "No objects detected in this image"
   }
 }
 
@@ -65,6 +70,11 @@ const zh = {
     "ready": "就绪",
     "loading": "加载中",
     "error": "错误"
+  },
+  "results": {
+    "detectedObjects": "检测结果",
+    "confidence": "置信度",
+    "noResultsFound": "此图像中未检测到物体"
   }
 }
 
