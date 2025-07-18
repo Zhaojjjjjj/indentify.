@@ -1,0 +1,29 @@
+{
+  "app": {
+    "title": "img Identify",
+    "description": "AI-powered image object detection"
+  },
+  "upload": {
+    "dragText": "Drag image here or click to upload",
+    "supportText": "Support JPG, PNG format, file size no more than {size}MB",
+    "analyzing": "Analyzing...",
+    "analysisFailed": "Image analysis failed, please try again",
+    "fileSizeError": "Upload image size cannot exceed {size}MB!"
+  },
+  "detection": {
+    "modelLoading": "Model loading...",
+    "modelReady": "Model ready",
+    "detecting": "Detecting objects...",
+    "noResults": "No objects detected"
+  },
+  "language": {
+    "switch": "Language",
+    "english": "English",
+    "chinese": "中文"
+  },
+  "status": {
+    "ready": "Ready",
+    "loading": "Loading",
+    "error": "Error"
+  }
+}

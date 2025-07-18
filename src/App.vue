@@ -40,7 +40,7 @@
 	</div>
 </template>
 
-<script lang="ts" setup>
+<script setup lang="ts">
 import { reactive } from 'vue'
 import { motion } from 'motion-v'
 import HeaderBar from './components/HeaderBar.vue'
@@ -50,7 +50,7 @@ import { useBlackHoleAnimation } from './composables/useBlackHoleAnimation'
 import { modelStatus } from './composables/useImageDetection'
 import type { UploadedData, BlackHoleProps, ProcessedDetectionResult } from './types'
 
-// 黑洞动画配置
+// Black hole animation configuration
 const blackHoleProps: BlackHoleProps = {
 	strokeColor: '#737373',
 	numberOfLines: 50,
@@ -58,13 +58,13 @@ const blackHoleProps: BlackHoleProps = {
 	particleRGBColor: [255, 255, 255],
 }
 
-// 使用黑洞动画
+// Use black hole animation
 const { canvasRef } = useBlackHoleAnimation(blackHoleProps)
 
-// 模型状态
+// Model status
 const status = modelStatus
 
-// 图片数据
+// Image data
 const imageData = reactive<{
 	src: string
 	results: ProcessedDetectionResult[]
@@ -73,7 +73,10 @@ const imageData = reactive<{
 	results: [],
 })
 
-// 处理图片上传
+/**
+ * Handles image upload event
+ * @param data - Uploaded image data with detection results
+ */
 const handleImageUploaded = (data: UploadedData) => {
 	imageData.src = data.image.src
 	imageData.results = data.results

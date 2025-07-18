@@ -9,11 +9,11 @@
 			v-for="item in processedResults"
 			:key="item.id"
 			class="bounding-box absolute border-2 border-solid box-border pointer-events-none transition-all duration-200"
-			:style="getBoxStyle(item) as any"
+			:style="getBoxStyle(item)"
 		>
 			<span
 				class="label absolute px-2 py-1 text-xs whitespace-nowrap overflow-hidden text-ellipsis pointer-events-none rounded font-bold shadow-lg backdrop-blur-sm"
-				:style="getLabelStyle(item) as any"
+				:style="getLabelStyle(item)"
 			>
 				{{ item.label }} ({{ (item.score * 100).toFixed(1) }}%)
 			</span>
@@ -37,7 +37,7 @@ const processedResults = computed((): ProcessedDetectionResult[] => {
 		return []
 	}
 
-	// 按位置排序检测结果
+	// Sort detection results by position
 	const sortedResults = [...props.data.results].sort((a, b) => {
 		if (a.box.ymin !== b.box.ymin) {
 			return a.box.ymin - b.box.ymin
@@ -45,9 +45,9 @@ const processedResults = computed((): ProcessedDetectionResult[] => {
 		return a.box.xmin - b.box.xmin
 	})
 
-	const LABEL_HEIGHT = 26 // 标签高度
-	const PADDING = 2 // 标签间距
-	const MAX_VERTICAL_OFFSET = 50 // 最大垂直偏移量
+	const LABEL_HEIGHT = 26 // Label height
+	const PADDING = 2 // Label spacing
+	const MAX_VERTICAL_OFFSET = 50 // Maximum vertical offset
 
 	const placedLabels: Array<{
 		xmin: number
@@ -55,12 +55,18 @@ const processedResults = computed((): ProcessedDetectionResult[] => {
 		verticalOffset: number
 	}> = []
 
-	// 生成随机颜色
+	/**
+	 * Generates a random color
+	 * @returns Random HSL color string
+	 */
 	const generateRandomColor = (): string => {
 		return '#' + Math.floor(Math.random() * 0xffffff).toString(16).padStart(6, '0')
 	}
 
-	// 生成唯一ID
+	/**
+	 * Generates a unique ID
+	 * @returns Unique identifier string
+	 */
 	const generateId = (): string => {
 		return `detection-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
 	}
@@ -73,7 +79,7 @@ const processedResults = computed((): ProcessedDetectionResult[] => {
 
 		let currentYOffset = 0
 
-		// 计算标签位置，避免重叠
+		// Calculate label position to avoid overlapping
 		for (const placed of placedLabels) {
 			const horizontalOverlap = Math.max(
 				0, 
@@ -103,7 +109,11 @@ const processedResults = computed((): ProcessedDetectionResult[] => {
 	})
 })
 
-// 获取边界框样式
+/**
+ * Gets bounding box styles
+ * @param item - Detection result
+ * @returns Style object for the bounding box
+ */
 const getBoxStyle = (item: ProcessedDetectionResult) => {
 	const { box } = item
 	return {
@@ -120,7 +130,11 @@ const getBoxStyle = (item: ProcessedDetectionResult) => {
 	}
 }
 
-// 获取标签样式
+/**
+ * Gets label styles
+ * @param item - Detection result
+ * @returns Style object for the label
+ */
 const getLabelStyle = (item: ProcessedDetectionResult) => {
 	return {
 		position: 'absolute',

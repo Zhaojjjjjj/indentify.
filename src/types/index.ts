@@ -23,6 +23,12 @@ export interface ProcessedDetectionResult {
   }
 }
 
+export interface ImageData {
+  src: string
+  width: number
+  height: number
+}
+
 export interface UploadedData {
   image: ImageData
   results: ProcessedDetectionResult[]

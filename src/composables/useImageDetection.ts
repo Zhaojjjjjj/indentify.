@@ -1,26 +1,56 @@
-import { ref } from 'vue'
+import { ref, computed, watch } from 'vue'
 import type { DetectionResult, ProcessedDetectionResult, ImageData, UploadedData, WorkerMessage } from '../types'
 import labelMap from '../utils/labelMap'
+import i18n from '../i18n'
 
 export const useImageDetection = () => {
-  const modelStatus = ref('正在初始化工作线程...')
+  const t = (key: string, params?: any) => i18n.global.t(key, params)
+  const modelStatus = ref(t('detection.initializingWorker'))
   const modelReady = ref(false)
+  
+  // Store current status key and params for language switching updates
+  let currentStatusKey = 'detection.initializingWorker'
+  let currentStatusParams: any = undefined
+  
+  /**
+   * Updates the model status with reactive translation
+   * @param key - Translation key
+   * @param params - Translation parameters
+   */
+  const updateModelStatus = (key: string, params?: any) => {
+    currentStatusKey = key
+    currentStatusParams = params
+    modelStatus.value = t(key, params)
+  }
+  
+  // Watch for language changes and update status accordingly
+  watch(() => i18n.global.locale.value, () => {
+    updateModelStatus(currentStatusKey, currentStatusParams)
+  })
   
   let resolveDetection: ((value: DetectionResult[]) => void) | null = null
   let currentPercent = 0
   let fakeProgressTimer: NodeJS.Timeout | null = null
   let readyFlag = false
 
+  /**
+   * Updates the model loading progress
+   * @param p - Progress percentage (0-100)
+   */
   const updateProgress = (p: number) => {
     if (readyFlag) return
     p = Math.floor(p)
     if (p > 99) p = 99
     if (p > currentPercent) {
       currentPercent = p
-      modelStatus.value = `初始化模型... ${currentPercent}%`
+      updateModelStatus('detection.initializingModel', { percent: currentPercent })
     }
   }
 
+  /**
+   * Starts fake progress animation for better UX
+   * @param fromPercent - Starting percentage
+   */
   const startFakeProgress = (fromPercent: number) => {
     if (fakeProgressTimer) clearInterval(fakeProgressTimer)
     currentPercent = fromPercent
@@ -33,27 +63,31 @@ export const useImageDetection = () => {
       if (currentPercent < 99) {
         const increment = Math.floor(Math.random() * 3) + 1
         currentPercent = Math.min(99, currentPercent + increment)
-        modelStatus.value = `初始化模型... ${currentPercent}%`
+        updateModelStatus('detection.initializingModel', { percent: currentPercent })
       }
     }, 1000)
   }
 
-  // 初始化Worker
+  // Initialize Web Worker for AI model processing
   const worker = new Worker('/worker.js', { type: 'module' })
   
-  // 初始化状态
+  // Initialize detection state
   readyFlag = false
   modelReady.value = false
-  modelStatus.value = '初始化模型... 0%'
+  updateModelStatus('detection.initializingModel', { percent: 0 })
   currentPercent = 0
   startFakeProgress(0)
 
+  /**
+   * Handles messages from the Web Worker
+   * @param event - Worker message event
+   */
   const handleWorkerMessage = (event: MessageEvent<WorkerMessage>) => {
     const { status, data, output, message } = event.data
 
     switch (status) {
       case 'progress':
-        modelStatus.value = '正在加载模型'
+        updateModelStatus('detection.loadingModel')
         if (data?.progress !== undefined) {
           updateProgress(Math.round(data.progress * 100))
         }
@@ -66,7 +100,7 @@ export const useImageDetection = () => {
           fakeProgressTimer = null
         }
         currentPercent = 100
-        modelStatus.value = '模型已就绪'
+        updateModelStatus('detection.modelReady')
         modelReady.value = true
         break
         
@@ -78,18 +112,23 @@ export const useImageDetection = () => {
         break
         
       case 'error':
-        modelStatus.value = `模型加载失败: ${message}`
+        updateModelStatus('detection.modelLoadFailed', { message })
         console.error('Worker error:', message)
         break
     }
   }
 
-  // 设置 Worker 消息处理
+  // Set up Worker message handling
   worker.onmessage = handleWorkerMessage
 
+  /**
+   * Detects objects in the provided image file
+   * @param imageFile - Image file to analyze
+   * @returns Promise resolving to uploaded data with detection results
+   */
   const detect = async (imageFile: File): Promise<UploadedData | null> => {
      if (!modelReady.value) {
-       return Promise.reject(new Error('模型尚未就绪，无法进行分析。'))
+       return Promise.reject(new Error(t('detection.modelNotReady')))
      }
  
      return new Promise((resolve) => {
@@ -133,7 +172,7 @@ export const useImageDetection = () => {
   }
 }
 
-// 创建全局实例
+// Create global detection instance
 const globalDetection = useImageDetection()
 
 export const { modelStatus, modelReady, detect } = globalDetection

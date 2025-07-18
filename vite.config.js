@@ -8,7 +8,7 @@ export default defineConfig({
 	plugins: [
 		vue(),
 		AutoImport({
-			// 自动导入 Vue 相关函数，如：ref, reactive ...
+			// Auto import Vue related functions, such as: ref, reactive ...
 			imports: ['vue', 'vue-router'],
 		}),
 		UnoCSS(),

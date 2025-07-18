@@ -18,13 +18,13 @@ const labelMap: LabelMap = {
   'truck': '卡车',
   'boat': '船',
   
-  // 交通设施
-  'traffic light': '交通灯',
+  // Traffic infrastructure
+  'traffic light': '红绿灯',
   'fire hydrant': '消防栓',
   'stop sign': '停车标志',
   'parking meter': '停车计时器',
   
-  // 家具
+  // Furniture
   'bench': '长凳',
   'chair': '椅子',
   'couch': '沙发',
@@ -102,7 +102,7 @@ const labelMap: LabelMap = {
   'sink': '水槽',
   'refrigerator': '冰箱',
   
-  // 其他物品
+  // Other items
   'book': '书',
   'clock': '时钟',
   'vase': '花瓶',

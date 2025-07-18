@@ -11,10 +11,10 @@
 	>
 		<i class="el-icon--upload"></i>
 		<div class="text-[#9887EC] font-medium">
-			拖拽图片到此或点击上传
+			{{ $t('upload.dragText') }}
 		</div>
 		<div class="text-xs text-gray-400 mt-2">
-			支持 JPG、PNG 格式，文件大小不超过 {{ MAX_FILE_SIZE_MB }}MB
+			{{ $t('upload.supportText', { size: MAX_FILE_SIZE_MB }) }}
 		</div>
 	</el-upload>
 </template>
@@ -22,62 +22,79 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { ElLoading, ElMessage } from 'element-plus'
+import { useI18n } from 'vue-i18n'
 import { detect, modelReady } from '../composables/useImageDetection'
 import type { UploadedData, DetectionResult } from '../types'
+
+const { t } = useI18n()
 
 interface UploadFile {
 	raw: File
 	size: number
 }
 
-// 事件定义
+// Event definitions
 const emit = defineEmits<{
 	uploaded: [data: UploadedData]
 }>()
 
-// 响应式数据
+// Reactive data
 const loading = ref(false)
 const ready = modelReady
 const MAX_FILE_SIZE_MB = 5
 
-// 文件验证
+/**
+ * Validates the uploaded file
+ * @param file - File to validate
+ * @returns True if file is valid
+ */
 const validateFile = (file: File): boolean => {
 	const isValidSize = file.size / 1024 / 1024 < MAX_FILE_SIZE_MB
 	if (!isValidSize) {
-		ElMessage.error(`上传图片大小不能超过 ${MAX_FILE_SIZE_MB}MB!`)
+		ElMessage.error(t('upload.fileSizeError', { size: MAX_FILE_SIZE_MB }))
 	}
 	return isValidSize
 }
 
-// 处理文件变化
+/**
+ * Handles file change event
+ * @param file - Selected file
+ */
 const handleFileChange = async (file: UploadFile) => {
 	if (!ready.value || loading.value) return
 
 	try {
-		loading.value = true
-		const loadingInstance = ElLoading.service({ 
-			text: '分析中...', 
-			background: 'rgba(0,0,0,0.4)', 
-			customClass: 'text-[#9887EC]' 
-		})
+			loading.value = true
+			const loadingInstance = ElLoading.service({ 
+				text: t('upload.analyzing'), 
+				background: 'rgba(0,0,0,0.4)', 
+				customClass: 'text-[#9887EC]' 
+			})
 
 		const result = await detect(file.raw)
 		if (result) {
-			// 设置图片的实际尺寸
+			// Set actual image dimensions
 			const img = new Image()
 			img.onload = () => {
-				result.image.width = img.naturalWidth
-				result.image.height = img.naturalHeight
-				emit('uploaded', result)
+				// Create new image object to avoid modifying readonly properties
+				const updatedResult = {
+					...result,
+					image: {
+						...result.image,
+						width: img.naturalWidth,
+						height: img.naturalHeight
+					}
+				}
+				emit('uploaded', updatedResult)
 			}
 			img.src = result.image.src
 		}
 
 		loadingInstance.close()
 	} catch (error) {
-		console.error('图片分析失败:', error)
-		ElMessage.error('图片分析失败，请重试')
-	} finally {
+			console.error('图片分析失败:', error)
+			ElMessage.error(t('upload.analysisFailed'))
+		} finally {
 		loading.value = false
 	}
 }
