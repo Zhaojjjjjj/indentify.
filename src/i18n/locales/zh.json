@@ -11,8 +11,13 @@
     "fileSizeError": "上传图片大小不能超过 {size}MB!"
   },
   "detection": {
+    "initializingWorker": "初始化工作线程...",
+    "initializingModel": "正在加载模型 {percent}%",
+    "loadingModel": "正在加载模型...",
     "modelLoading": "模型加载中...",
     "modelReady": "模型就绪",
+    "modelNotReady": "模型未就绪",
+    "modelLoadFailed": "模型加载失败: {message}",
     "detecting": "检测物体中...",
     "noResults": "未检测到物体"
   },

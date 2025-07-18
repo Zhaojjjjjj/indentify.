@@ -11,8 +11,13 @@
     "fileSizeError": "Upload image size cannot exceed {size}MB!"
   },
   "detection": {
+    "initializingWorker": "Initializing worker...",
+    "initializingModel": "Loading model {percent}%",
+    "loadingModel": "Loading model...",
     "modelLoading": "Model loading...",
     "modelReady": "Model ready",
+    "modelNotReady": "Model not ready",
+    "modelLoadFailed": "Model loading failed: {message}",
     "detecting": "Detecting objects...",
     "noResults": "No objects detected"
   },

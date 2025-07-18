@@ -87,7 +87,6 @@ export const useImageDetection = () => {
 
     switch (status) {
       case 'progress':
-        updateModelStatus('detection.loadingModel')
         if (data?.progress !== undefined) {
           updateProgress(Math.round(data.progress * 100))
         }
